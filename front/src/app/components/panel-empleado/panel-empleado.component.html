@@ -1,0 +1,257 @@
+<div class="panel-empleado">
+  <!-- Material Toolbar Header -->
+  <mat-toolbar color="primary" class="empleado-toolbar">
+    <div class="toolbar-left">
+      <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Abrir menu de secciones">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <div class="toolbar-logo">
+        <img src="/logo.jpeg" alt="Cortarte Estilistas" class="logo">
+        <div>
+          <h1>Panel de Empleado</h1>
+          <p>Gestión diaria de turnos</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <button mat-icon-button (click)="cerrarSesion()" matTooltip="Cerrar sesión" aria-label="Cerrar sesión">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </mat-toolbar>
+
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="cambiarTab('asistencia')">
+      <mat-icon>assignment</mat-icon>
+      <span>Asistencia</span>
+    </button>
+    <button mat-menu-item (click)="cambiarTab('turnos')">
+      <mat-icon>event</mat-icon>
+      <span>Mis Turnos</span>
+    </button>
+    <button mat-menu-item (click)="cambiarTab('stock')">
+      <mat-icon>inventory</mat-icon>
+      <span>Stock</span>
+    </button>
+  </mat-menu>
+
+  <!-- Material Tabs -->
+  <mat-tab-group
+    class="empleado-tabs"
+    [selectedIndex]="getTabIndex(tabActiva())"
+    (selectedIndexChange)="cambiarTab(getTabFromIndex($event))">
+    <!-- Tab 1: Asistencia -->
+    <mat-tab label="Asistencia">
+      <ng-template mat-tab-label>
+        <mat-icon>assignment</mat-icon>
+        <span class="tab-label">Asistencia</span>
+      </ng-template>
+      <div class="tab-content">
+        <app-asistencia></app-asistencia>
+      </div>
+    </mat-tab>
+
+    <!-- Tab 2: Mis Turnos -->
+    <mat-tab label="Mis Turnos">
+      <ng-template mat-tab-label>
+        <mat-icon>event</mat-icon>
+        <span class="tab-label">Mis Turnos</span>
+      </ng-template>
+
+      <div class="tab-content">
+        @if (cargando()) {
+          <div class="loading-container">
+            <mat-spinner diameter="50"></mat-spinner>
+            <p>Cargando turnos...</p>
+          </div>
+        }
+
+        @if (error()) {
+          <div class="error-banner">
+            <mat-icon>warning</mat-icon>
+            <p>{{ error() }}</p>
+            <button mat-stroked-button color="warn" (click)="refrescar()">
+              <mat-icon>refresh</mat-icon>
+              Reintentar
+            </button>
+          </div>
+        }
+
+        @if (accionError()) {
+          <div class="error-banner">
+            <mat-icon>warning</mat-icon>
+            <p>{{ accionError() }}</p>
+          </div>
+        }
+
+        @if (!cargando()) {
+          <!-- Resumen Cards -->
+          <div class="resumen-grid">
+            <mat-card class="resumen-card">
+              <mat-card-content>
+                <div class="resumen-header">
+                  <mat-icon class="icon todo">event_note</mat-icon>
+                  <div class="resumen-info">
+                    <p class="numero">{{ turnosProximos().length }}</p>
+                    <p class="etiqueta">Próximos</p>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <mat-card class="resumen-card">
+              <mat-card-content>
+                <div class="resumen-header">
+                  <mat-icon class="icon activo">trending_up</mat-icon>
+                  <div class="resumen-info">
+                    <p class="numero">{{ turnosEnCurso().length }}</p>
+                    <p class="etiqueta">En Curso</p>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <mat-card class="resumen-card">
+              <mat-card-content>
+                <div class="resumen-header">
+                  <mat-icon class="icon completado">check_circle</mat-icon>
+                  <div class="resumen-info">
+                    <p class="numero">{{ turnosFinalizados().length }}</p>
+                    <p class="etiqueta">Finalizados</p>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <!-- En Curso Section -->
+          @if (turnosEnCurso().length > 0) {
+            <div class="seccion">
+              <h2 class="seccion-titulo en-curso">
+                <mat-icon>trending_up</mat-icon>
+                En Curso
+              </h2>
+              <div class="turnos-grid">
+                @for (turno of turnosEnCurso(); track turno.id) {
+                  <mat-card class="turno-card en-curso-card">
+                    <mat-card-header>
+                      <div class="turno-header">
+                        <span class="turno-hora">⏰ {{ getHora(turno.fechaHoraInicio) }}</span>
+                        <mat-chip-set aria-label="Estado">
+                          <mat-chip class="chip-activo">
+                            {{ getEstadoTexto(turno.estado) }}
+                          </mat-chip>
+                        </mat-chip-set>
+                      </div>
+                    </mat-card-header>
+                    <mat-card-content>
+                      <h3 class="cliente-nombre">{{ turno.clienteNombre }}</h3>
+                      <p class="telefono">📱 {{ turno.clienteTelefono }}</p>
+                      <div class="servicio-info">
+                        <span class="servicio">{{ turno.servicioNombre }}</span>
+                        <span class="duracion">{{ turno.servicioDuracion }}min</span>
+                      </div>
+                    </mat-card-content>
+                    <mat-card-actions>
+                      <button mat-raised-button color="accent" 
+                              (click)="cambiarEstado(turno.id, EstadoTurno.FINALIZADO)">
+                        <mat-icon>check</mat-icon>
+                        Finalizar
+                      </button>
+                      <button mat-stroked-button color="warn" 
+                              (click)="cambiarEstado(turno.id, EstadoTurno.NO_ASISTIO)">
+                        <mat-icon>close</mat-icon>
+                       No Asistió
+                      </button>
+                    </mat-card-actions>
+                  </mat-card>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Próximos Turnos Section -->
+          @if (turnosProximos().length > 0) {
+            <div class="seccion">
+              <h2 class="seccion-titulo">
+                <mat-icon>event_note</mat-icon>
+                Próximos Turnos
+              </h2>
+              <div class="turnos-lista">
+                @for (turno of turnosProximos(); track turno.id) {
+                  <mat-card class="turno-item-card">
+                    <mat-card-content>
+                      <div class="turno-item-grid">
+                        <div class="hora">{{ getHora(turno.fechaHoraInicio) }}</div>
+                        <div class="info">
+                          <p class="cliente">{{ turno.clienteNombre }}</p>
+                          <p class="servicio">{{ turno.servicioNombre }}</p>
+                        </div>
+                        <mat-chip-set aria-label="Estado">
+                          <mat-chip class="chip-proximo">
+                            {{ getEstadoTexto(turno.estado) }}
+                          </mat-chip>
+                        </mat-chip-set>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Turnos Finalizados Section -->
+          @if (turnosFinalizados().length > 0) {
+            <div class="seccion">
+              <h2 class="seccion-titulo completado">
+                <mat-icon>check_circle</mat-icon>
+                Finalizados Hoy
+              </h2>
+              <div class="turnos-lista-compacta">
+                @for (turno of turnosFinalizados(); track turno.id) {
+                  <mat-card class="turno-item-card completado">
+                    <mat-card-content>
+                      <div class="turno-item-grid">
+                        <div class="hora">{{ getHora(turno.fechaHoraInicio) }}</div>
+                        <div class="info">
+                          <p class="cliente">{{ turno.clienteNombre }}</p>
+                        </div>
+                        <mat-chip-set aria-label="Estado">
+                          <mat-chip class="chip-completado">
+                            {{ getEstadoTexto(turno.estado) }}
+                          </mat-chip>
+                        </mat-chip-set>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Sin turnos -->
+          @if (misTurnos().length === 0) {
+            <div class="sin-turnos">
+              <mat-icon>event_available</mat-icon>
+              <h3>No tienes turnos para hoy</h3>
+              <p>¡Disfruta tu día libre! 🎉</p>
+            </div>
+          }
+        }
+      </div>
+    </mat-tab>
+
+    <!-- Tab 3: Stock -->
+    <mat-tab label="Stock">
+      <ng-template mat-tab-label>
+        <mat-icon>inventory</mat-icon>
+        <span class="tab-label">Stock</span>
+      </ng-template>
+      <div class="tab-content stock-tab-content">
+        <app-stock-empleado></app-stock-empleado>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

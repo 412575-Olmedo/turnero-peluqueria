@@ -1,0 +1,158 @@
+/* Angular Material Theme */
+@import '@angular/material/prebuilt-themes/azure-blue.css';
+
+/* Directivas de Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos globales del sistema de turnos */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Estilos de FullCalendar mejorados */
+:root {
+  --fc-border-color: #e2e8f0;
+  --fc-button-bg-color: #667eea;
+  --fc-button-border-color: #667eea;
+  --fc-button-hover-bg-color: #5568d3;
+  --fc-button-active-bg-color: #4451b8;
+  --fc-today-bg-color: rgba(102, 126, 234, 0.1);
+  --fc-event-border-color: transparent;
+}
+
+.fc {
+  font-size: 0.95rem;
+}
+
+.fc-event {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+}
+
+.fc-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.fc-event-title {
+  font-weight: 600;
+}
+
+.fc-event-time {
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.fc-toolbar-title {
+  font-size: 1.5rem !important;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.fc-col-header-cell-cushion {
+  padding: 8px 4px;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.fc-daygrid-day-number {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.fc-day-today .fc-daygrid-day-number {
+  background: #667eea;
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5568d3;
+}
+
+/* Responsive para FullCalendar en móviles */
+@media (max-width: 768px) {
+  .fc {
+    font-size: 0.85rem;
+  }
+  
+  .fc-toolbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .fc-toolbar-chunk {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .fc-button {
+    font-size: 0.85rem !important;
+    padding: 0.4rem 0.7rem !important;
+  }
+  
+  .fc-toolbar-title {
+    font-size: 1.2rem !important;
+  }
+  
+  .fc-event {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+  }
+  
+  .fc-daygrid-event {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 480px) {
+  .fc-toolbar-title {
+    font-size: 1rem !important;
+  }
+  
+  .fc-col-header-cell-cushion {
+    font-size: 0.75rem;
+  }
+  
+  .fc-daygrid-day-number {
+    font-size: 0.85rem;
+  }
+}

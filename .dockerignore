@@ -1,0 +1,54 @@
+# Node modules
+**/node_modules
+**/npm-debug.log
+
+# Build outputs
+**/dist
+**/target
+**/build
+
+# IDE
+**/.idea
+**/.vscode
+**/*.iml
+**/*.iws
+
+# Git
+**/.git
+**/.gitignore
+
+# Testing
+**/coverage
+**/.nyc_output
+
+# Environment files (se deben configurar en el hosting)
+**/.env
+**/.env.local
+**/.env.*.local
+
+# OS files
+**/.DS_Store
+**/Thumbs.db
+
+# Logs
+**/logs
+**/*.log
+
+# Temporary files
+**/tmp
+**/temp
+
+# Documentation
+**/README.md
+**/HELP.md
+**/ARCHITECTURE.md
+**/BEST-PRACTICES.md
+**/COMPLETADO.md
+**/DEPLOYMENT.md
+**/EJECUCION-LOCAL.md
+
+# Scripts de desarrollo
+**/*.sh
+**/*.bat
+**/run-local.ps1
+**/quick-start.*

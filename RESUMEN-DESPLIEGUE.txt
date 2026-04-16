@@ -1,0 +1,158 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                                                                      ║
+║  🚀 DESPLIEGUE COMPLETO EN DONWEB - RESUMEN RÁPIDO                  ║
+║                                                                      ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ PASO 1: Configurar .env                                              │
+└──────────────────────────────────────────────────────────────────────┘
+
+Edita el archivo .env en:
+C:\Users\thiag\OneDrive\Escritorio\turnero-peluqueria\.env
+
+Variables CRÍTICAS a cambiar:
+
+  API_URL=http://TU-DOMINIO.donweb.com:8080/api  ← ¡IMPORTANTE!
+  POSTGRES_PASSWORD=TuPasswordSegura123!
+  JWT_SECRET=genera-64-caracteres-aleatorios
+  APP_URL=http://TU-DOMINIO.donweb.com
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ PASO 2: Subir Código a DonWeb                                       │
+└──────────────────────────────────────────────────────────────────────┘
+
+OPCIÓN A - Git (más fácil):
+  1. Crear repo en GitHub
+  2. Subir código:
+     git add .
+     git commit -m "Proyecto completo"
+     git push origin main
+  
+  3. En DonWeb (por SSH):
+     ssh usuario@tu-dominio.donweb.com
+     git clone https://github.com/tu-usuario/turnero-peluqueria.git
+     cd turnero-peluqueria
+
+OPCIÓN B - FileZilla (alternativa):
+  1. Conectar por SFTP a tu VPS
+  2. Arrastrar carpeta turnero-peluqueria completa
+  3. Asegurarte de incluir el archivo .env
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ PASO 3: Desplegar en DonWeb                                         │
+└──────────────────────────────────────────────────────────────────────┘
+
+En el VPS (por SSH):
+
+  cd turnero-peluqueria
+  
+  # Dar permisos
+  chmod +x deploy-donweb.sh
+  
+  # Desplegar TODO
+  ./deploy-donweb.sh
+  
+  # O manualmente:
+  docker-compose build --no-cache
+  docker-compose up -d
+  
+  # Ver progreso
+  docker-compose logs -f
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ PASO 4: Verificar                                                    │
+└──────────────────────────────────────────────────────────────────────┘
+
+  # Estado de contenedores
+  docker-compose ps
+  
+  # Deberías ver 4 servicios "Up":
+  ✓ turnero-frontend   (puerto 80)
+  ✓ turnero-backend    (puerto 8080)
+  ✓ turnero-db         (puerto 5432)
+  ✓ turnero-evolution  (puerto 8085)
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ PASO 5: Probar URLs                                                  │
+└──────────────────────────────────────────────────────────────────────┘
+
+Abre en tu navegador:
+
+  ✓ http://tu-dominio.donweb.com
+    → Debería mostrar la página de reserva de turnos
+  
+  ✓ http://tu-dominio.donweb.com:8080/actuator/health
+    → Debería responder: {"status":"UP"}
+  
+  ✓ http://tu-dominio.donweb.com:8080/api/servicios
+    → Debería devolver JSON con los servicios
+  
+  ✓ http://tu-dominio.donweb.com/admin
+    → Panel de administración (admin/admin123)
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  🎯 LO MÁS IMPORTANTE                                                ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+  ⚠️  API_URL en .env DEBE tener tu dominio real de DonWeb:
+  
+      ❌ INCORRECTO: API_URL=http://localhost:8080/api
+      ✅ CORRECTO:   API_URL=http://turnero123.donweb.com:8080/api
+  
+  Sin esto, el frontend NO se conectará al backend.
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  🆘 PROBLEMAS COMUNES                                                ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+Frontend no muestra datos:
+  → Verificar API_URL en .env
+  → cat .env | grep API_URL
+  → Debe tener el dominio público, no localhost
+
+Backend no inicia:
+  → docker-compose logs backend
+  → Verificar variables de BD
+
+Error 502:
+  → Backend no está corriendo
+  → docker-compose restart backend
+
+No puedo conectar por SSH:
+  → Verificar usuario y dominio/IP
+  → ssh -v usuario@dominio (para ver errores)
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  📚 DOCUMENTACIÓN COMPLETA                                           ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+  📖 GUIA-DESPLIEGUE-COMPLETO.md    → Guía detallada paso a paso
+  ✅ CHECKLIST-DONWEB.md            → Lista de verificación
+  💻 COMANDOS-DONWEB.md             → Comandos útiles
+  📘 CONFIGURACION-DONWEB.md        → Configuración y troubleshooting
+
+
+╔══════════════════════════════════════════════════════════════════════╗
+║  🎉 ¡LISTO!                                                          ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+Tu sistema completo está desplegado:
+  ✓ Frontend Angular (puerto 80)
+  ✓ Backend Spring Boot (puerto 8080)
+  ✓ Base de datos PostgreSQL (puerto 5432)
+  ✓ WhatsApp Evolution API (puerto 8085)
+
+Los clientes pueden entrar a:
+  http://tu-dominio.donweb.com
+
+Y empezar a reservar turnos inmediatamente.
+
+¡Éxito! 🚀

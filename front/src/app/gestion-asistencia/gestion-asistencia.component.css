@@ -1,0 +1,275 @@
+.gestion-asistencia {
+  padding: 0;
+}
+
+.card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.card h2 {
+  margin: 0 0 1rem;
+  color: #0f172a;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.success-banner {
+  border: 1px solid #bbf7d0;
+  border-left: 4px solid #16a34a;
+  background: #f0fdf4;
+  color: #166534;
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  margin-bottom: 0.8rem;
+  font-size: 0.9rem;
+}
+
+.error-banner {
+  border: 1px solid #fecaca;
+  border-left: 4px solid #dc2626;
+  background: #fef2f2;
+  color: #991b1b;
+  border-radius: 10px;
+  padding: 0.65rem 0.8rem;
+  margin-bottom: 0.8rem;
+  font-size: 0.9rem;
+}
+
+.vacio {
+  text-align: center;
+  color: #64748b;
+  padding: 1.5rem;
+}
+
+.jornadas-abiertas {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.jornada-abierta {
+  border: 1px solid #bbf7d0;
+  border-left: 4px solid #22c55e;
+  background: #f0fdf4;
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.empleado-nombre {
+  margin-bottom: 0.3rem;
+  color: #0f172a;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.jornada-detalles {
+  color: #047857;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.filtro label {
+  color: #334155;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.filtro select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.resumen-empleado h3 {
+  margin: 0 0 0.8rem;
+  border: 1px solid #dbeafe;
+  border-left: 4px solid #60a5fa;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.7rem;
+}
+
+.resumen-totales {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.total-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  text-align: center;
+  padding: 0.75rem;
+}
+
+.total-item .label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.72rem;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.total-item .valor {
+  display: block;
+  color: #0f172a;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.total-item.destacado {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.total-item.destacado .valor {
+  color: #166534;
+}
+
+.total-item.pendiente {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.total-item.pendiente .valor {
+  color: #92400e;
+}
+
+.btn-pagar {
+  width: 100%;
+  border: 1px solid #86efac;
+  border-radius: 10px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.7rem 0.9rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.btn-pagar:hover {
+  background: #dcfce7;
+}
+
+.detalle-jornadas h4 {
+  margin: 0 0 0.6rem;
+  color: #334155;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.jornada-detalle {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 1fr 1fr;
+  gap: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.84rem;
+  color: #475569;
+}
+
+.jornada-detalle.pagado {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.gestion-asistencia .jornadas-tabla {
+  overflow-x: auto;
+}
+
+.gestion-asistencia table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 580px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.gestion-asistencia th {
+  background: #f8fafc;
+  color: #334155;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 0.65rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.gestion-asistencia td {
+  color: #475569;
+  font-size: 0.85rem;
+  padding: 0.65rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.gestion-asistencia tr:last-child td {
+  border-bottom: none;
+}
+
+.gestion-asistencia tr:hover {
+  background: #f8fafc;
+}
+
+.duracion-cell {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.pagado-cell {
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .filtros {
+    grid-template-columns: 1fr;
+  }
+
+  .resumen-totales {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .jornada-detalle {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .resumen-totales {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 0.8rem;
+  }
+}

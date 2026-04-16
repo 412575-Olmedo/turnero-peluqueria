@@ -1,0 +1,189 @@
+<div class="gestion-stock-container">
+  @if (mensaje()) {
+    <div class="success-banner">{{ mensaje() }}</div>
+  }
+  @if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  }
+
+  @if (vistaActual() === 'listado') {
+    <div class="section-header">
+      <button mat-raised-button color="accent" (click)="abrirModalNuevo()">
+        <mat-icon>add</mat-icon>
+        Nuevo Producto
+      </button>
+    </div>
+
+    @if (productosStockBajo().length > 0) {
+      <div class="alertas-stock">
+        <div class="alerta-titulo">⚠️ Stock Bajo ({{ productosStockBajo().length }})</div>
+        <div class="productos-alerta">
+          @for (producto of productosStockBajo(); track producto.id) {
+            <span class="badge-alerta">
+              {{ getIconoCategoria(producto.categoria) }} {{ producto.nombre }}
+              ({{ producto.stockActual }}/{{ producto.stockMinimo }})
+            </span>
+          }
+        </div>
+      </div>
+    }
+
+    @if (cargando()) {
+      <div class="loading">Cargando productos...</div>
+    }
+
+    <div class="productos-grid">
+      @for (producto of productos(); track producto.id) {
+        <div class="producto-card" [class]="getStockClase(producto)">
+          <div class="producto-header">
+            <div class="producto-icono">{{ getIconoCategoria(producto.categoria) }}</div>
+            <div class="producto-info">
+              <h3>{{ producto.nombre }}</h3>
+              <p class="categoria">{{ producto.categoria }}</p>
+            </div>
+            <button class="btn-icon" (click)="abrirModalEditar(producto)">✏️</button>
+          </div>
+
+          @if (producto.descripcion) {
+            <p class="descripcion">{{ producto.descripcion }}</p>
+          }
+
+          <div class="stock-info">
+            <div class="stock-actual">
+              <span class="label">Stock Actual</span>
+              <span class="valor">{{ producto.stockActual }} {{ producto.unidad }}</span>
+            </div>
+            <div class="stock-minimo">
+              <span class="label">Stock Mínimo</span>
+              <span class="valor">{{ producto.stockMinimo }} {{ producto.unidad }}</span>
+            </div>
+          </div>
+
+          @if (producto.stockBajo) {
+            <div class="badge-stock-bajo">⚠️ Stock Bajo</div>
+          }
+
+          <div class="acciones">
+            <button class="btn-sumar" (click)="sumarStock(producto)">
+              <span class="icono">+</span>
+              <span class="texto">Agregar</span>
+            </button>
+            <button class="btn-restar" (click)="restarStock(producto)">
+              <span class="icono">-</span>
+              <span class="texto">Retirar</span>
+            </button>
+            <button class="btn-historial" (click)="verHistorial(producto)">📋 Historial</button>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (!cargando() && productos().length === 0) {
+      <div class="sin-productos">
+        <p>📦 No hay productos registrados</p>
+        <button mat-raised-button color="accent" (click)="abrirModalNuevo()">
+          <mat-icon>add</mat-icon>
+          Crear Primer Producto
+        </button>
+      </div>
+    }
+  }
+
+  @if (vistaActual() === 'formulario') {
+    <div class="inline-panel">
+      <div class="inline-header">
+        <h3>{{ productoSeleccionado() ? '✏️ Editar Producto' : '➕ Nuevo Producto' }}</h3>
+        <button type="button" class="btn-cancelar" (click)="cerrarModal()">Volver al listado</button>
+      </div>
+
+      <form (ngSubmit)="guardarProducto()" class="formulario-stock">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" [(ngModel)]="nuevoProducto.nombre" name="nombre" required>
+        </div>
+
+        <div class="form-group">
+          <label>Categoría *</label>
+          <select [(ngModel)]="nuevoProducto.categoria" name="categoria" required>
+            @for (cat of categorias; track cat) {
+              <option [value]="cat">{{ getIconoCategoria(cat) }} {{ cat }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="nuevoProducto.descripcion" name="descripcion" rows="3"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Stock Actual *</label>
+            <input type="number" [(ngModel)]="nuevoProducto.stockActual" name="stockActual" min="0" required>
+          </div>
+
+          <div class="form-group">
+            <label>Stock Mínimo *</label>
+            <input type="number" [(ngModel)]="nuevoProducto.stockMinimo" name="stockMinimo" min="0" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Unidad de Medida *</label>
+          <select [(ngModel)]="nuevoProducto.unidad" name="unidad" required>
+            <option value="und">Unidad</option>
+            <option value="ml">Mililitros (ml)</option>
+            <option value="L">Litros (L)</option>
+            <option value="g">Gramos (g)</option>
+            <option value="kg">Kilogramos (kg)</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn-guardar">{{ productoSeleccionado() ? 'Actualizar' : 'Crear' }}</button>
+        </div>
+
+        @if (productoSeleccionado()) {
+          <button type="button" class="btn-eliminar" (click)="eliminarProducto(productoSeleccionado()!)">
+            🗑️ Eliminar Producto
+          </button>
+        }
+      </form>
+    </div>
+  }
+
+  @if (vistaActual() === 'historial') {
+    <div class="inline-panel inline-panel-historial">
+      <div class="inline-header">
+        <h3>📋 Historial de {{ productoSeleccionado()?.nombre }}</h3>
+        <button type="button" class="btn-cancelar" (click)="cerrarHistorial()">Volver al listado</button>
+      </div>
+
+      <div class="historial-lista">
+        @if (historialMovimientos().length === 0) {
+          <p class="sin-movimientos">No hay movimientos registrados</p>
+        }
+
+        @for (mov of historialMovimientos(); track mov.id) {
+          <div class="movimiento-item" [class]="getTipoMovimientoClase(mov.tipo)">
+            <div class="movimiento-tipo">
+              <span class="tipo-badge">{{ getTipoMovimientoTexto(mov.tipo) }}</span>
+              <span class="movimiento-cantidad">
+                {{ mov.tipo === TipoMovimiento.ENTRADA ? '+' : '-' }}{{ mov.cantidad }}
+              </span>
+            </div>
+            <div class="movimiento-info">
+              <p class="motivo">{{ mov.motivo }}</p>
+              <p class="stocks">Stock: {{ mov.stockAnterior }} -> {{ mov.stockNuevo }}</p>
+              <p class="metadata">
+                <span class="usuario">👤 {{ mov.usuarioNombre }}</span>
+                <span class="fecha">{{ mov.fechaMovimiento | date:'dd/MM/yyyy HH:mm' }}</span>
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

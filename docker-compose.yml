@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # Evolution API - DESHABILITADO (ahora usamos Meta Cloud API)
+  # evolution:
+  #   image: atendai/evolution-api:v2.2.3
+  #   container_name: turnero-evolution
+  #   restart: unless-stopped
+  #   ports:
+  #     - "${EVOLUTION_EXTERNAL_PORT:-8085}:8080"
+  #   dns:
+  #     - 1.1.1.1
+  #     - 8.8.8.8
+  #   environment:
+  #     SERVER_TYPE: http
+  #     SERVER_PORT: 8080
+  #     NODE_OPTIONS: --dns-result-order=ipv4first
+  #     DATABASE_ENABLED: "true"
+  #     DATABASE_PROVIDER: postgresql
+  #     DATABASE_CONNECTION_URI: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-turnero_peluqueria}?schema=evolution
+  #     AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
+  #     AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES: "true"
+  #     CONFIG_SESSION_PHONE_VERSION: "2.2413.51"
+  #     CACHE_REDIS_ENABLED: "false"
+  #     CACHE_LOCAL_ENABLED: "true"
+  #     LOG_LEVEL: ERROR,WARN,INFO,LOG,DEBUG,VERBOSE,WEBSOCKET,WEBHOOKS
+  #     LOG_BAILEYS: debug
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   volumes:
+  #     - evolution_instances:/evolution/instances
+  #   networks:
+  #     - turnero-network
+
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: turnero-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-turnero_peluqueria}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "${DB_EXTERNAL_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - turnero-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Spring Boot
+  backend:
+    build:
+      context: ./initial-scaffolding
+      dockerfile: Dockerfile
+    container_name: turnero-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_EXTERNAL_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      TZ: America/Argentina/Buenos_Aires
+      JAVA_TOOL_OPTIONS: -Duser.timezone=America/Argentina/Buenos_Aires
+      DB_URL: ${DB_URL:-jdbc:postgresql://db:5432/turnero_peluqueria}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-mi-clave-secreta-super-segura-para-jwt-en-turnero-peluqueria-2025-production}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      APP_URL: ${APP_URL:-http://localhost:8081}
+      APP_NAME: ${APP_NAME:-Turnero Peluquería}
+      APP_DESC: ${APP_DESC:-Sistema de gestión de turnos para peluquería}
+      APP_VERSION: ${APP_VERSION:-1.0.0}
+      APP_DEV_NAME: ${APP_DEV_NAME:-Equipo Desarrollo}
+      APP_DEV_EMAIL: ${APP_DEV_EMAIL:-dev@turnero.com}
+      META_WHATSAPP_ENABLED: ${META_WHATSAPP_ENABLED:-true}
+      META_PHONE_NUMBER_ID: ${META_PHONE_NUMBER_ID}
+      META_ACCESS_TOKEN: ${META_ACCESS_TOKEN}
+      META_API_VERSION: ${META_API_VERSION:-v18.0}
+      META_COUNTRY_CODE: ${META_COUNTRY_CODE:-54}
+      META_TIMEOUT_MS: ${META_TIMEOUT_MS:-10000}
+      PORT: 8080
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - turnero-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Frontend Angular
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: turnero-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_EXTERNAL_PORT:-80}:80"
+    environment:
+      API_URL: ${API_URL:-http://localhost:8080/api}
+      NGINX_PORT: 80
+      NGINX_HOST: localhost
+    depends_on:
+      - backend
+    networks:
+      - turnero-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  turnero-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  # evolution_instances:  # Ya no se usa
+  #   driver: local

@@ -1,0 +1,135 @@
+<!-- Contenedor principal -->
+<div class="asistencia-container">
+  <!-- Error -->
+  @if (error()) {
+    <div class="error-banner">
+      {{ error() }}
+    </div>
+  }
+
+  @if (exito()) {
+    <div class="success-banner">
+      {{ exito() }}
+    </div>
+  }
+
+  <!-- Estado actual -->
+  <div class="card estado-card">
+    <div class="fecha-actual">
+      <span>📅</span>
+      <span>{{ getFechaActual() }}</span>
+    </div>
+
+    <div class="hora-actual">
+      <span class="reloj">🕐</span>
+      <span class="hora">{{ getHoraActual() }}</span>
+    </div>
+
+    @if (trabajando()) {
+      <!-- Empleado trabajando -->
+      <div class="estado trabajando">
+        <div class="estado-icono">🟢</div>
+        <div class="estado-texto">TRABAJANDO</div>
+      </div>
+
+      <div class="info-jornada">
+        <div class="info-item">
+          <span class="label">Entrada:</span>
+          <span class="valor">{{ horaEntradaFormateada() }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Tiempo trabajado:</span>
+          <span class="valor destacado">{{ jornadaActual().tiempoTranscurrido }}</span>
+        </div>
+        @if (resumenMensual()?.precioHora) {
+          <div class="info-item">
+            <span class="label">Estimado hoy:</span>
+            <span class="valor dinero">~${{ montoEstimadoHoy().toLocaleString('es-AR', { maximumFractionDigits: 0 }) }}</span>
+          </div>
+        }
+      </div>
+
+      <button 
+        class="btn btn-salida"
+        (click)="marcarSalida()"
+        [disabled]="cargando()">
+        🔴 MARCAR SALIDA
+      </button>
+    } @else {
+      <!-- Sin entrada marcada -->
+      <div class="estado no-trabajando">
+        <div class="estado-icono">🔴</div>
+        <div class="estado-texto">NO HAS MARCADO ENTRADA</div>
+      </div>
+
+      <button 
+        class="btn btn-entrada"
+        (click)="marcarEntrada()"
+        [disabled]="cargando()">
+        🟢 MARCAR ENTRADA
+      </button>
+    }
+  </div>
+
+  <!-- Resumen del mes -->
+  @if (resumenMensual(); as resumen) {
+    <div class="card resumen-card">
+      <h3>💵 Este mes ({{ getNombreMes() }})</h3>
+      <div class="resumen-grid">
+        <div class="resumen-item">
+          <div class="resumen-label">Horas trabajadas</div>
+          <div class="resumen-valor">{{ (resumen.totalHoras ?? 0).toFixed(1) }}h</div>
+        </div>
+        <div class="resumen-item">
+          <div class="resumen-label">A cobrar</div>
+          <div class="resumen-valor dinero">${{ (resumen.totalPendiente ?? 0).toLocaleString('es-AR') }}</div>
+        </div>
+        <div class="resumen-item">
+          <div class="resumen-label">Jornadas</div>
+          <div class="resumen-valor">{{ resumen.totalJornadas ?? 0 }}</div>
+        </div>
+        @if (resumen.precioHora) {
+          <div class="resumen-item">
+            <div class="resumen-label">Tu tarifa</div>
+            <div class="resumen-valor">${{ resumen.precioHora.toLocaleString('es-AR') }}/h</div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Historial -->
+  <div class="card historial-card">
+    <div class="historial-header" (click)="toggleHistorial()">
+      <h3>📊 Historial</h3>
+      <span class="toggle-icon">{{ mostrarHistorial() ? '▼' : '▶' }}</span>
+    </div>
+
+    @if (mostrarHistorial()) {
+      <div class="historial-lista">
+        @if (historial().length === 0) {
+          <p class="vacio">No hay jornadas registradas este mes</p>
+        }
+        @for (jornada of historial(); track jornada.id) {
+          <div class="historial-item" [class.pagado]="jornada.pagado">
+            <div class="jornada-fecha">
+              {{ asistenciaService.formatearFecha(jornada.fecha) }}
+            </div>
+            <div class="jornada-info">
+              <span class="jornada-horas">{{ (jornada.horasTrabajadas ?? 0).toFixed(1) }}h</span>
+              <span class="jornada-monto">${{ (jornada.montoAPagar ?? 0).toLocaleString('es-AR') }}</span>
+              <span class="jornada-estado">{{ getEstadoIcono(jornada) }} {{ getEstadoTexto(jornada) }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Loading -->
+  @if (cargando()) {
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+    </div>
+  }
+</div>

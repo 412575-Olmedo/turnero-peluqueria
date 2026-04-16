@@ -1,0 +1,102 @@
+<div class="gestion-asistencia">
+  <!-- Jornadas abiertas -->
+  <div class="card">
+    <h2>🟢 Empleados Trabajando Ahora</h2>
+    @if (jornadasAbiertas().length === 0) {
+      <p class="vacio">No hay empleados trabajando actualmente</p>
+    } @else {
+      <div class="jornadas-abiertas">
+        @for (jornada of jornadasAbiertas(); track jornada.id) {
+          <div class="jornada-abierta">
+            <div class="empleado-nombre">{{ jornada.empleadoNombre }}</div>
+            <div class="jornada-detalles">
+              <span>Entrada: {{ asistenciaService.formatearHora(jornada.horaEntrada) }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Liquidación mensual -->
+  <div class="card">
+    <h2>💰 Liquidación Mensual</h2>
+
+    @if (mensaje()) {
+      <div class="success-banner">{{ mensaje() }}</div>
+    }
+    @if (error()) {
+      <div class="error-banner">{{ error() }}</div>
+    }
+    
+    <div class="filtros">
+      <div class="filtro">
+        <label>Empleado:</label>
+        <select (change)="onEmpleadoChange($event)" [value]="empleadoSeleccionado()">
+          <option [value]="null">Seleccionar empleado...</option>
+          @for (empleado of empleados(); track empleado.id) {
+            <option [value]="empleado.id">{{ empleado.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filtro">
+        <label>Mes:</label>
+        <select [value]="mesSeleccionado()" (change)="onMesChange($event)">
+          @for (mes of meses; track mes.valor) {
+            <option [value]="mes.valor">{{ mes.nombre }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (resumenMensual(); as resumen) {
+      <div class="resumen-empleado">
+        <h3>{{ resumen.empleadoNombre }} - {{ meses[resumen.mes - 1].nombre }} {{ resumen.anio }}</h3>
+        
+        <div class="resumen-totales">
+          <div class="total-item">
+            <span class="label">Total Horas:</span>
+            <span class="valor">{{ resumen.totalHoras.toFixed(1) }}h</span>
+          </div>
+          <div class="total-item">
+            <span class="label">Precio/Hora:</span>
+            <span class="valor">${{ resumen.precioHora.toLocaleString('es-AR') }}</span>
+          </div>
+          <div class="total-item destacado">
+            <span class="label">TOTAL:</span>
+            <span class="valor">${{ resumen.totalAPagar.toLocaleString('es-AR') }}</span>
+          </div>
+          <div class="total-item pendiente">
+            <span class="label">Pendiente:</span>
+            <span class="valor">${{ resumen.totalPendiente.toLocaleString('es-AR') }}</span>
+          </div>
+          <div class="total-item">
+            <span class="label">Jornadas:</span>
+            <span class="valor">{{ resumen.totalJornadas }}</span>
+          </div>
+        </div>
+
+        @if (resumen.totalPendiente > 0) {
+          <button class="btn-pagar" (click)="marcarMesComoPagado()">
+            ✅ Marcar Mes como Pagado
+          </button>
+        }
+
+        <div class="detalle-jornadas">
+          <h4>📋 Detalle:</h4>
+          @for (jornada of resumen.jornadas; track jornada.id) {
+            <div class="jornada-detalle" [class.pagado]="jornada.pagado">
+              <span class="fecha">{{ asistenciaService.formatearFecha(jornada.fecha) }}</span>
+              <span class="horas">{{ (jornada.horasTrabajadas ?? 0).toFixed(1) }}h</span>
+              <span class="monto">${{ (jornada.montoAPagar ?? 0).toLocaleString('es-AR') }}</span>
+              <span class="estado">{{ jornada.pagado ? '✅ Pagado' : (jornada.horaSalida ? '⏳ Pendiente' : '🔄 En curso') }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    } @else if (empleadoSeleccionado()) {
+      <p class="vacio">Selecciona un empleado para ver su liquidación</p>
+    }
+  </div>
+</div>

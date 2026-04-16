@@ -1,0 +1,800 @@
+<div class="admin-container">
+  <!-- Toolbar Material -->
+  <mat-toolbar color="primary" class="admin-toolbar">
+    <div class="toolbar-left">
+      <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Abrir menu de secciones">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <div class="toolbar-logo">
+        <img src="/logo.jpeg" alt="Cortarte Estilistas" class="logo">
+        <div>
+          <h1>Panel de Administración</h1>
+          <p>Gestión profesional de tu peluquería</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <app-sucursal-selector></app-sucursal-selector>
+      <button mat-icon-button (click)="cerrarSesion()" matTooltip="Cerrar sesión" aria-label="Cerrar sesion">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </mat-toolbar>
+
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="cambiarTab('estadisticas')">
+      <mat-icon>dashboard</mat-icon>
+      <span>Dashboard</span>
+    </button>
+    <button mat-menu-item (click)="cambiarTab('turnos')">
+      <mat-icon>event</mat-icon>
+      <span>Turnos</span>
+    </button>
+    <button mat-menu-item (click)="cambiarTab('empleados')">
+      <mat-icon>people</mat-icon>
+      <span>Colaboradores</span>
+    </button>
+    <button mat-menu-item (click)="cambiarTab('servicios')">
+      <mat-icon>content_cut</mat-icon>
+      <span>Servicios</span>
+    </button>
+    <button mat-menu-item (click)="cambiarTab('horarios')">
+      <mat-icon>schedule</mat-icon>
+      <span>Horarios</span>
+    </button>
+    <button mat-menu-item (click)="cambiarTab('stock')">
+      <mat-icon>inventory</mat-icon>
+      <span>Stock</span>
+    </button>
+    <button mat-menu-item (click)="cambiarTab('asistencia')">
+      <mat-icon>assignment</mat-icon>
+      <span>Asistencia</span>
+    </button>
+  </mat-menu>
+
+  <!-- Tabs Material -->
+  <mat-tab-group
+    class="admin-tabs"
+    [selectedIndex]="getTabIndex(tabActiva())"
+    (selectedIndexChange)="cambiarTab(getTabNameFromIndex($event))">
+    @if (mensaje()) {
+      <div class="success-banner">{{ mensaje() }}</div>
+    }
+    @if (errorAccion()) {
+      <div class="error-banner">{{ errorAccion() }}</div>
+    }
+
+    <!-- TAB: DASHBOARD -->
+    <mat-tab label="Dashboard" class="tab-dashboard">
+      <ng-template mat-tab-label>
+        <mat-icon>dashboard</mat-icon>
+        <span class="tab-label">Dashboard</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <!-- Selector de Rango de Fechas -->
+        <div class="filtros-section">
+          <mat-form-field appearance="outline">
+            <mat-label>Desde</mat-label>
+            <input matInput type="date" [(ngModel)]="fechaInicio" (change)="actualizarRango()">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Hasta</mat-label>
+            <input matInput type="date" [(ngModel)]="fechaFin" (change)="actualizarRango()">
+          </mat-form-field>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <mat-card class="stat-card">
+            <mat-card-header>
+              <mat-icon class="stat-icon">event</mat-icon>
+              <div class="stat-content">
+                <h3>{{ estadisticas().turnosHoy }}</h3>
+                <p>Turnos Hoy</p>
+              </div>
+            </mat-card-header>
+          </mat-card>
+
+          <mat-card class="stat-card">
+            <mat-card-header>
+              <mat-icon class="stat-icon">calendar_month</mat-icon>
+              <div class="stat-content">
+                <h3>{{ estadisticas().turnosSemana }}</h3>
+                <p>Turnos en Rango</p>
+              </div>
+            </mat-card-header>
+          </mat-card>
+
+          <mat-card class="stat-card">
+            <mat-card-header>
+              <mat-icon class="stat-icon">attach_money</mat-icon>
+              <div class="stat-content">
+                <h3>{{ formatearPrecio(estadisticas().ingresos) }}</h3>
+                <p>Ingresos del Rango</p>
+              </div>
+            </mat-card-header>
+          </mat-card>
+
+          <mat-card class="stat-card">
+            <mat-card-header>
+              <mat-icon class="stat-icon">person</mat-icon>
+              <div class="stat-content">
+                <h3>{{ estadisticas().clientesNuevos }}</h3>
+                <p>Clientes Únicos</p>
+              </div>
+            </mat-card-header>
+          </mat-card>
+        </div>
+
+        <!-- Quick Info Section -->
+        <div class="quick-info-grid">
+          <mat-card class="info-card">
+            <mat-card-content>
+              <h3><mat-icon>people</mat-icon> Equipo</h3>
+              <p class="big-number">{{ empleados().length }}</p>
+              <p class="label">Empleados activos</p>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="info-card">
+            <mat-card-content>
+              <h3><mat-icon>content_cut</mat-icon> Servicios</h3>
+              <p class="big-number">{{ servicios().length }}</p>
+              <p class="label">Servicios disponibles</p>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="info-card">
+            <mat-card-content>
+              <h3><mat-icon>event_note</mat-icon> Total Turnos</h3>
+              <p class="big-number">{{ estadisticas().turnosMes }}</p>
+              <p class="label">Este mes</p>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- TAB: TURNOS -->
+    <mat-tab label="Turnos">
+      <ng-template mat-tab-label>
+        <mat-icon>event</mat-icon>
+        <span class="tab-label">Turnos</span>
+      </ng-template>
+
+      <div class="tab-content">
+        @if (mostrarDetalleTurno() && turnoSeleccionado()) {
+          <section class="inline-panel turno-detail-panel">
+            <div class="inline-panel-header">
+              <h3>Detalle del Turno</h3>
+              <button mat-icon-button (click)="cerrarDetalleTurno()" matTooltip="Cerrar detalle">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <div class="turno-detalle-grid">
+              <div class="detalle-seccion">
+                <h4>Cliente</h4>
+                <p><strong>Nombre:</strong> {{ turnoSeleccionado()!.clienteNombre }}</p>
+                <p><strong>Telefono:</strong> {{ turnoSeleccionado()!.clienteTelefono }}</p>
+                @if (turnoSeleccionado()!.clienteEmail) {
+                  <p><strong>Email:</strong> {{ turnoSeleccionado()!.clienteEmail }}</p>
+                }
+              </div>
+
+              <div class="detalle-seccion">
+                <h4>Servicio</h4>
+                <p><strong>{{ turnoSeleccionado()!.servicioNombre }}</strong></p>
+                <p>Duracion: {{ turnoSeleccionado()!.servicioDuracion }} minutos</p>
+                <p>Precio: {{ formatearPrecio(turnoSeleccionado()!.servicioPrecio) }}</p>
+              </div>
+
+              <div class="detalle-seccion">
+                <h4>Colaborador</h4>
+                <p>{{ turnoSeleccionado()!.empleadoNombre }}</p>
+                <p>{{ turnoSeleccionado()!.empleadoEspecialidad }}</p>
+              </div>
+
+              <div class="detalle-seccion">
+                <h4>Fecha y Hora</h4>
+                <p>{{ formatearFecha(turnoSeleccionado()!.fechaHoraInicio) }}</p>
+                <p>{{ turnoSeleccionado()!.fechaHoraInicio | date: 'HH:mm' }} -
+                   {{ turnoSeleccionado()!.fechaHoraFin | date: 'HH:mm' }}</p>
+              </div>
+
+              @if (turnoSeleccionado()!.observaciones) {
+                <div class="detalle-seccion detalle-seccion-full">
+                  <h4>Observaciones</h4>
+                  <p>{{ turnoSeleccionado()!.observaciones }}</p>
+                </div>
+              }
+            </div>
+          </section>
+        } @else {
+          <div class="turnos-toolbar">
+            <div class="turnos-filtro-colaborador">
+              <label for="turnosColaborador">Colaborador</label>
+              <select
+                id="turnosColaborador"
+                [ngModel]="colaboradorTurnosSeleccionado()"
+                (ngModelChange)="colaboradorTurnosSeleccionado.set($event)">
+                <option value="">Todos los colaboradores</option>
+                @for (empleado of empleados(); track empleado.id) {
+                  <option [value]="empleado.id">{{ empleado.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="turnos-filtro-estado">
+              <label for="turnosEstado">Estado</label>
+              <select
+                id="turnosEstado"
+                [ngModel]="estadoTurnosSeleccionado()"
+                (ngModelChange)="estadoTurnosSeleccionado.set($event)">
+                <option value="">Todos los estados</option>
+                @for (estado of estadosTurnoDisponibles(); track estado) {
+                  <option [value]="estado">{{ estado }}</option>
+                }
+              </select>
+            </div>
+
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="limpiarFiltroColaboradorTurnos()"
+              [disabled]="!colaboradorTurnosSeleccionado() && !estadoTurnosSeleccionado()">
+              Limpiar filtros
+            </button>
+          </div>
+
+          <div class="turnos-list">
+            @for (turno of turnosFiltrados(); track turno.id) {
+              <button class="turno-row" type="button" (click)="verDetalleTurno(turno)">
+                <div class="turno-fecha-hora">
+                  <strong class="turno-hora">{{ turno.fechaHoraInicio | date: 'HH:mm' }}</strong>
+                  <span class="turno-fecha">{{ formatearFecha(turno.fechaHoraInicio) }}</span>
+                </div>
+
+                <div class="turno-resumen">
+                  <h4>{{ turno.clienteNombre }}</h4>
+                  <p class="servicio-info">{{ turno.servicioNombre }}</p>
+                  <p class="colaborador-info">{{ turno.empleadoNombre }}</p>
+                </div>
+
+                <div class="turno-side">
+                  <mat-chip-set aria-label="Estado">
+                    <mat-chip [class]="'estado-' + turno.estado.toLowerCase()">
+                      {{ turno.estado }}
+                    </mat-chip>
+                  </mat-chip-set>
+                  <span class="precio-badge">{{ formatearPrecio(turno.servicioPrecio) }}</span>
+                </div>
+              </button>
+            } @empty {
+              <div class="empty-state">
+                <mat-icon>event_busy</mat-icon>
+                <p>No hay turnos para el filtro seleccionado</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- TAB: COLABORADORES -->
+    <mat-tab label="Colaboradores">
+      <ng-template mat-tab-label>
+        <mat-icon>people</mat-icon>
+        <span class="tab-label">Colaboradores</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="section-header">
+          <button mat-raised-button color="accent" (click)="abrirFormEmpleado()">
+            <mat-icon>add</mat-icon>
+            Nuevo Colaborador
+          </button>
+        </div>
+
+        @if (mostrarFormEmpleado()) {
+          <section class="inline-panel">
+            <div class="inline-panel-header">
+              <h3>{{ empleadoEditando() ? 'Editar Colaborador' : 'Nuevo Colaborador' }}</h3>
+              <button mat-icon-button (click)="cerrarFormEmpleado()" matTooltip="Cerrar formulario">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <form class="inline-form" (ngSubmit)="guardarEmpleado()">
+              <div class="form-grid two-columns">
+                <div class="form-group">
+                  <label>Nombre Completo *</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="(empleadoEditando() || nuevoEmpleado).nombre"
+                    name="nombre"
+                    placeholder="Ej: Carlos Rodriguez"
+                    required>
+                </div>
+
+                <div class="form-group">
+                  <label>Especialidad *</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="(empleadoEditando() || nuevoEmpleado).especialidad"
+                    name="especialidad"
+                    placeholder="Ej: Barbero / Estilista / Colorista"
+                    required>
+                </div>
+              </div>
+
+              <div class="form-grid two-columns">
+                <div class="form-group">
+                  <label>Usuario de acceso *</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="(empleadoEditando() || nuevoEmpleado).username"
+                    name="username"
+                    placeholder="Ej: carlos"
+                    required>
+                </div>
+
+                <div class="form-group">
+                  <label>Email (opcional)</label>
+                  <input
+                    type="email"
+                    [(ngModel)]="(empleadoEditando() || nuevoEmpleado).email"
+                    name="email"
+                    placeholder="Ej: carlos@cortarte.com">
+                </div>
+              </div>
+
+              <div class="form-grid two-columns">
+                <div class="form-group">
+                  <label>{{ empleadoEditando() ? 'Nueva contraseña (opcional)' : 'Contraseña inicial *' }}</label>
+                  <input
+                    type="password"
+                    [(ngModel)]="(empleadoEditando() || nuevoEmpleado).password"
+                    name="password"
+                    placeholder="********"
+                    [required]="!empleadoEditando()">
+                </div>
+              </div>
+
+              <div class="form-grid two-columns">
+                <div class="form-group">
+                  <label>Precio/Hora (opcional)</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="(empleadoEditando() || nuevoEmpleado).precioHora"
+                    name="precioHora"
+                    placeholder="Ej: 2500"
+                    step="100"
+                    min="0">
+                </div>
+
+                <div class="form-group checkbox-row">
+                  <label class="toggle-label" for="empleadoActivo">
+                    <input
+                      id="empleadoActivo"
+                      class="toggle-input"
+                      type="checkbox"
+                      [(ngModel)]="(empleadoEditando() || nuevoEmpleado).activo"
+                      name="activo">
+                    <span class="toggle-text">
+                      {{ (empleadoEditando() || nuevoEmpleado).activo ? 'Colaborador activo' : 'Colaborador inactivo' }}
+                      <small>(disponible para turnos)</small>
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Servicios que ofrece</label>
+                <div class="servicios-checkbox-group">
+                  @for (servicio of servicios(); track servicio.id) {
+                    <label class="checkbox-servicio">
+                      <input
+                        type="checkbox"
+                        [checked]="esServicioSeleccionado(servicio.id)"
+                        (change)="toggleServicioEmpleado(servicio.id)">
+                      <span>{{ servicio.nombre }} ({{ servicio.duracionMinutos }}min - ${{ servicio.precio.toLocaleString('es-AR') }})</span>
+                    </label>
+                  }
+                </div>
+              </div>
+
+              <div class="form-actions-inline">
+                <button type="button" mat-stroked-button (click)="cerrarFormEmpleado()">Cancelar</button>
+                <button type="submit" mat-raised-button color="primary">
+                  {{ empleadoEditando() ? 'Actualizar' : 'Guardar' }}
+                </button>
+              </div>
+            </form>
+          </section>
+        } @else {
+          @if (empleados().length > 0) {
+            <div class="empleados-grid">
+              @for (empleado of empleados(); track empleado.id) {
+                <mat-card class="empleado-card">
+                  <mat-card-header>
+                    <div class="empleado-header">
+                      <mat-icon class="empleado-icon">person</mat-icon>
+                      <div>
+                        <h4>{{ empleado.nombre }}</h4>
+                        <p class="especialidad">{{ empleado.especialidad }}</p>
+                      </div>
+                    </div>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <p class="servicios-label">Servicios:</p>
+                    <mat-chip-set aria-label="Servicios">
+                      @for (servicio of empleado.servicios; track servicio.id) {
+                        <mat-chip>{{ servicio.nombre }}</mat-chip>
+                      }
+                    </mat-chip-set>
+                    <div class="estado-switch">
+                      <span class="label-estado">{{ empleado.activo ? 'Activo' : 'Inactivo' }}</span>
+                      <button
+                        mat-icon-button
+                        [color]="empleado.activo ? 'accent' : 'warn'"
+                        (click)="toggleEmpleadoActivo(empleado)">
+                        <mat-icon>{{ empleado.activo ? 'check_circle' : 'block' }}</mat-icon>
+                      </button>
+                    </div>
+                  </mat-card-content>
+                  <mat-card-actions>
+                    <button mat-stroked-button color="primary" (click)="abrirFormEmpleado(empleado)">
+                      <mat-icon>edit</mat-icon>
+                      Editar
+                    </button>
+                    <button mat-stroked-button color="warn" (click)="eliminarEmpleado(empleado.id)">
+                      <mat-icon>delete</mat-icon>
+                      Eliminar
+                    </button>
+                  </mat-card-actions>
+                </mat-card>
+              }
+            </div>
+          } @else {
+            <div class="empty-state">
+              <mat-icon>people_outline</mat-icon>
+              <p>No hay colaboradores registrados</p>
+              <button mat-raised-button color="accent" (click)="abrirFormEmpleado()">
+                <mat-icon>add</mat-icon>
+                Agregar Primer Colaborador
+              </button>
+            </div>
+          }
+        }
+      </div>
+    </mat-tab>
+
+    <!-- TAB: SERVICIOS -->
+    <mat-tab label="Servicios">
+      <ng-template mat-tab-label>
+        <mat-icon>content_cut</mat-icon>
+        <span class="tab-label">Servicios</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="section-header">
+          <button mat-raised-button color="accent" (click)="abrirFormServicio()">
+            <mat-icon>add</mat-icon>
+            Nuevo Servicio
+          </button>
+        </div>
+
+        @if (mostrarFormServicio()) {
+          <section class="inline-panel">
+            <div class="inline-panel-header">
+              <h3>{{ servicioEditando() ? 'Editar Servicio' : 'Nuevo Servicio' }}</h3>
+              <button mat-icon-button (click)="cerrarFormServicio()" matTooltip="Cerrar formulario">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+
+            <form class="inline-form" (ngSubmit)="guardarServicio()">
+              <div class="form-group">
+                <label>Nombre del Servicio *</label>
+                <input
+                  type="text"
+                  [(ngModel)]="(servicioEditando() || nuevoServicio).nombre"
+                  name="nombre"
+                  placeholder="Ej: Corte de Cabello"
+                  required>
+              </div>
+
+              <div class="form-group">
+                <label>Descripcion</label>
+                <textarea
+                  [(ngModel)]="(servicioEditando() || nuevoServicio).descripcion"
+                  name="descripcion"
+                  placeholder="Descripcion del servicio..."
+                  rows="3"></textarea>
+              </div>
+
+              <div class="form-grid two-columns">
+                <div class="form-group">
+                  <label>Duracion (minutos) *</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="(servicioEditando() || nuevoServicio).duracionMinutos"
+                    name="duracion"
+                    min="5"
+                    step="5"
+                    placeholder="30"
+                    required>
+                </div>
+
+                <div class="form-group">
+                  <label>Precio ($) *</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="(servicioEditando() || nuevoServicio).precio"
+                    name="precio"
+                    min="0"
+                    step="100"
+                    placeholder="5000"
+                    required>
+                </div>
+              </div>
+
+              <div class="form-group checkbox-row">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="(servicioEditando() || nuevoServicio).activo"
+                    name="activo">
+                  <span>Servicio activo (disponible para reservar)</span>
+                </label>
+              </div>
+
+              <div class="form-actions-inline">
+                <button type="button" mat-stroked-button (click)="cerrarFormServicio()">Cancelar</button>
+                <button type="submit" mat-raised-button color="primary">
+                  {{ servicioEditando() ? 'Actualizar' : 'Guardar' }}
+                </button>
+              </div>
+            </form>
+          </section>
+        } @else {
+          <div *ngIf="servicios().length > 0">
+            <table mat-table [dataSource]="servicios()" class="servicios-table">
+              <!-- Nombre Column -->
+              <ng-container matColumnDef="nombre">
+                <th mat-header-cell *matHeaderCellDef>Nombre</th>
+                <td mat-cell *matCellDef="let element">{{ element.nombre }}</td>
+              </ng-container>
+
+              <!-- Descripción Column -->
+              <ng-container matColumnDef="descripcion">
+                <th mat-header-cell *matHeaderCellDef>Descripción</th>
+                <td mat-cell *matCellDef="let element">{{ element.descripcion }}</td>
+              </ng-container>
+
+              <!-- Duración Column -->
+              <ng-container matColumnDef="duracion">
+                <th mat-header-cell *matHeaderCellDef>Duración</th>
+                <td mat-cell *matCellDef="let element">{{ element.duracionMinutos }} min</td>
+              </ng-container>
+
+              <!-- Precio Column -->
+              <ng-container matColumnDef="precio">
+                <th mat-header-cell *matHeaderCellDef>Precio</th>
+                <td mat-cell *matCellDef="let element">{{ formatearPrecio(element.precio) }}</td>
+              </ng-container>
+
+              <!-- Estado Column -->
+              <ng-container matColumnDef="estado">
+                <th mat-header-cell *matHeaderCellDef>Estado</th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-chip-set aria-label="Estado">
+                    <mat-chip [class.active]="element.activo">
+                      {{ element.activo ? 'Activo' : 'Inactivo' }}
+                    </mat-chip>
+                  </mat-chip-set>
+                </td>
+              </ng-container>
+
+              <!-- Acciones Column -->
+              <ng-container matColumnDef="acciones">
+                <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                <td mat-cell *matCellDef="let element">
+                  <button mat-icon-button color="primary" (click)="abrirFormServicio(element)" matTooltip="Editar">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="eliminarServicio(element.id)" matTooltip="Eliminar">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="['nombre', 'descripcion', 'duracion', 'precio', 'estado', 'acciones']"></tr>
+              <tr mat-row *matRowDef="let row; columns: ['nombre', 'descripcion', 'duracion', 'precio', 'estado', 'acciones'];"></tr>
+            </table>
+          </div>
+          <div *ngIf="servicios().length === 0" class="empty-state">
+            <mat-icon>content_cut</mat-icon>
+            <p>No hay servicios registrados</p>
+            <button mat-raised-button color="accent" (click)="abrirFormServicio()">
+              <mat-icon>add</mat-icon>
+              Agregar Primer Servicio
+            </button>
+          </div>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- TAB: HORARIOS -->
+    <mat-tab label="Horarios">
+      <ng-template mat-tab-label>
+        <mat-icon>schedule</mat-icon>
+        <span class="tab-label">Horarios</span>
+      </ng-template>
+
+      <div class="tab-content">
+        @if (empleados().length === 0) {
+          <div class="empty-state">
+            <mat-icon>groups</mat-icon>
+            <p>No hay colaboradores para configurar horarios</p>
+          </div>
+        } @else {
+          <div class="horarios-toolbar">
+            <div class="horarios-selector">
+              <label for="colaborador-horarios">Colaborador</label>
+              <select
+                id="colaborador-horarios"
+                [value]="empleadoHorariosSeleccionado() ?? ''"
+                (change)="seleccionarEmpleadoHorarios($event)">
+                <option value="" disabled>Seleccionar colaborador...</option>
+                @for (empleado of empleados(); track empleado.id) {
+                  <option [value]="empleado.id">{{ empleado.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <button
+              mat-raised-button
+              color="accent"
+              [disabled]="!empleadoHorariosSeleccionado()"
+              (click)="abrirFormHorario()">
+              <mat-icon>add</mat-icon>
+              Nuevo Horario
+            </button>
+          </div>
+
+          @if (mostrarFormHorario()) {
+            <section class="inline-panel">
+              <div class="inline-panel-header">
+                <h3>{{ horarioEditando() ? 'Editar Horario' : 'Nuevo Horario' }}</h3>
+                <button mat-icon-button (click)="cerrarFormHorario()" matTooltip="Cerrar formulario">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+
+              <form class="inline-form" (ngSubmit)="guardarHorario()">
+                <div class="form-grid two-columns">
+                  <div class="form-group">
+                    <label>Dia</label>
+                    <select
+                      [(ngModel)]="nuevoHorario.diaSemana"
+                      name="diaSemana"
+                      (change)="actualizarDiaNombre()"
+                      required>
+                      @for (dia of diasSemana; track dia.numero) {
+                        <option [ngValue]="dia.numero">{{ dia.nombre }}</option>
+                      }
+                    </select>
+                  </div>
+
+                  <div class="form-group checkbox-row">
+                    <label class="checkbox-label">
+                      <input type="checkbox" [(ngModel)]="nuevoHorario.activo" name="activoHorario">
+                      <span>Horario activo</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-grid three-columns">
+                  <div class="form-group">
+                    <label>Hora inicio</label>
+                    <input type="time" [(ngModel)]="nuevoHorario.horaInicio" name="horaInicio" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Hora fin</label>
+                    <input type="time" [(ngModel)]="nuevoHorario.horaFin" name="horaFin" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Descanso (min)</label>
+                    <input type="number" [(ngModel)]="nuevoHorario.descansoMinutos" name="descansoMinutos" min="0" step="5" required>
+                  </div>
+                </div>
+
+                <div class="form-actions-inline">
+                  <button type="button" mat-stroked-button (click)="cerrarFormHorario()">Cancelar</button>
+                  <button type="submit" mat-raised-button color="primary">
+                    {{ horarioEditando() ? 'Actualizar' : 'Guardar' }}
+                  </button>
+                </div>
+              </form>
+            </section>
+          } @else {
+            @if (!empleadoHorariosSeleccionado()) {
+              <p class="info-text">Selecciona un colaborador para ver y editar sus horarios</p>
+            } @else if (horarios().length === 0) {
+              <div class="empty-state">
+                <mat-icon>schedule</mat-icon>
+                <p>Este colaborador no tiene horarios configurados</p>
+                <button mat-raised-button color="accent" (click)="abrirFormHorario()">
+                  <mat-icon>add</mat-icon>
+                  Crear Primer Horario
+                </button>
+              </div>
+            } @else {
+              <div class="horarios-list">
+                @for (horario of horarios(); track horario.id ?? $index) {
+                  <mat-card class="horario-card">
+                    <mat-card-content>
+                      <div class="horario-main-row">
+                        <div>
+                          <p class="horario-dia">{{ horario.diaNombre }}</p>
+                          <p class="horario-rango">{{ formatearHora(horario.horaInicio) }} - {{ formatearHora(horario.horaFin) }}</p>
+                        </div>
+                        <mat-chip-set>
+                          <mat-chip [class]="horario.activo ? 'estado-finalizado' : 'estado-cancelado'">
+                            {{ horario.activo ? 'Activo' : 'Inactivo' }}
+                          </mat-chip>
+                        </mat-chip-set>
+                      </div>
+                      <p class="horario-descanso">Descanso: {{ horario.descansoMinutos }} min</p>
+                    </mat-card-content>
+                    <mat-card-actions>
+                      <button mat-stroked-button color="primary" (click)="editarHorario(horario)">
+                        <mat-icon>edit</mat-icon>
+                        Editar
+                      </button>
+                      <button mat-stroked-button color="warn" (click)="eliminarHorario(horario)">
+                        <mat-icon>delete</mat-icon>
+                        Eliminar
+                      </button>
+                    </mat-card-actions>
+                  </mat-card>
+                }
+              </div>
+            }
+          }
+        }
+      </div>
+    </mat-tab>
+
+    <!-- TAB: STOCK -->
+    <mat-tab label="Stock">
+      <ng-template mat-tab-label>
+        <mat-icon>inventory</mat-icon>
+        <span class="tab-label">Stock</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <app-gestion-stock></app-gestion-stock>
+      </div>
+    </mat-tab>
+
+    <!-- TAB: ASISTENCIA -->
+    <mat-tab label="Asistencia">
+      <ng-template mat-tab-label>
+        <mat-icon>assignment</mat-icon>
+        <span class="tab-label">Asistencia</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <app-gestion-asistencia></app-gestion-asistencia>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

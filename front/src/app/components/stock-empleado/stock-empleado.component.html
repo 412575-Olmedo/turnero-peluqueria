@@ -1,0 +1,144 @@
+<div class="stock-empleado-container">
+  <div class="header-stock">
+    <h2>Stock de Productos</h2>
+    <div class="busqueda-container">
+      <input 
+        type="text" 
+        placeholder="Buscar producto..."
+        [value]="busqueda()"
+        (input)="onBusquedaChange($any($event.target).value)"
+        class="input-busqueda">
+    </div>
+  </div>
+
+  @if (mensaje()) {
+    <div class="success-banner">{{ mensaje() }}</div>
+  }
+  @if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  }
+
+  <!-- Alertas de stock bajo -->
+  @if (productosStockBajo().length > 0) {
+    <div class="alertas-stock">
+      <div class="alerta-titulo">Stock bajo ({{ productosStockBajo().length }})</div>
+      <div class="productos-alerta">
+        @for (producto of productosStockBajo(); track producto.id) {
+          <span class="badge-alerta">
+            {{ getIconoCategoria(producto.categoria) }} {{ producto.nombre }} 
+            ({{ producto.stockActual }}/{{ producto.stockMinimo }})
+          </span>
+        }
+      </div>
+    </div>
+  }
+
+  @if (mostrarFormConsumo()) {
+    <section class="inline-panel consumo-panel">
+      <div class="inline-panel-header">
+        <h3>Registrar Consumo</h3>
+        <button class="btn-cerrar" (click)="cerrarFormConsumo()" aria-label="Cerrar formulario">x</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="producto">Producto</label>
+          @if (consumoActual.productoId > 0) {
+            <input 
+              type="text" 
+              [value]="consumoActual.productoNombre" 
+              disabled
+              class="input-disabled">
+          } @else {
+            <select 
+              [(ngModel)]="consumoActual.productoId" 
+              id="producto"
+              class="select-input">
+              <option [ngValue]="0">Seleccionar producto...</option>
+              @for (producto of productos(); track producto.id) {
+                <option [ngValue]="producto.id">
+                  {{ producto.nombre }} ({{ producto.stockActual }} {{ producto.unidad }})
+                </option>
+              }
+            </select>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="cantidad">Cantidad usada</label>
+          <input 
+            type="number" 
+            id="cantidad"
+            [(ngModel)]="consumoActual.cantidad"
+            min="1"
+            class="input-number">
+        </div>
+
+        <div class="form-group">
+          <label for="turnoId">Turno asociado (opcional)</label>
+          <input 
+            type="number" 
+            id="turnoId"
+            [(ngModel)]="consumoActual.turnoId"
+            placeholder="Numero de turno"
+            class="input-number">
+        </div>
+      </div>
+
+      <div class="panel-actions">
+        <button class="btn-secondary" (click)="cerrarFormConsumo()">
+          Cancelar
+        </button>
+        <button class="btn-primary" (click)="registrarConsumo()">
+          Guardar
+        </button>
+      </div>
+    </section>
+  }
+
+  <!-- Grid de Productos -->
+  @if (!mostrarFormConsumo()) {
+    <div class="productos-grid">
+      @for (producto of productosFiltrados(); track producto.id) {
+        <div class="producto-card" [class]="getStockClase(producto)">
+          <div class="producto-header">
+            <div class="producto-icono">{{ getIconoCategoria(producto.categoria) }}</div>
+            <div class="producto-info">
+              <h3>{{ producto.nombre }}</h3>
+              <p class="categoria">{{ producto.categoria }}</p>
+            </div>
+          </div>
+
+          @if (producto.descripcion) {
+            <p class="descripcion">{{ producto.descripcion }}</p>
+          }
+
+          <div class="stock-info">
+            <div class="stock-actual">
+              <span class="label">Stock actual</span>
+              <span class="valor">{{ producto.stockActual }} {{ producto.unidad }}</span>
+            </div>
+            <div class="stock-minimo">
+              <span class="label">Stock minimo</span>
+              <span class="valor">{{ producto.stockMinimo }} {{ producto.unidad }}</span>
+            </div>
+          </div>
+
+          @if (producto.stockBajo) {
+            <div class="badge-stock-bajo">Stock bajo</div>
+          }
+
+          <button 
+            class="btn-consumir"
+            (click)="abrirFormConsumo(producto)">
+            Registrar uso
+          </button>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <p>No se encontraron productos</p>
+        </div>
+      }
+    </div>
+  }
+</div>

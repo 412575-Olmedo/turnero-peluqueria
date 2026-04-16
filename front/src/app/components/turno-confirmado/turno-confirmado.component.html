@@ -1,0 +1,100 @@
+<div class="confirmacion-container">
+  @if (cargando()) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Cargando información del turno...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-card">
+      <h2>❌ Error</h2>
+      <p>{{ error() }}</p>
+      <button class="btn-primary" (click)="volverInicio()">Volver al Inicio</button>
+    </div>
+  } @else if (turno()) {
+    <div class="confirmacion-card">
+      <div class="success-icon">✅</div>
+      <h1>¡Turno Confirmado!</h1>
+      <p class="subtitle">Tu turno ha sido reservado exitosamente</p>
+
+      <div class="turno-detalles">
+        <div class="detalle-item">
+          <span class="icon">👤</span>
+          <div>
+            <label>Cliente</label>
+            <p>{{ turno()!.clienteNombre }}</p>
+          </div>
+        </div>
+
+        <div class="detalle-item">
+          <span class="icon">📅</span>
+          <div>
+            <label>Fecha</label>
+            <p>{{ turno()!.fechaHoraInicio | date: 'fullDate':'':'es-AR' }}</p>
+          </div>
+        </div>
+
+        <div class="detalle-item">
+          <span class="icon">🕐</span>
+          <div>
+            <label>Horario</label>
+            <p>{{ turno()!.fechaHoraInicio | date: 'HH:mm':'':'es-AR' }} - {{ turno()!.fechaHoraFin | date: 'HH:mm':'':'es-AR' }}</p>
+          </div>
+        </div>
+
+        <div class="detalle-item">
+          <span class="icon">💇</span>
+          <div>
+            <label>Servicio</label>
+            <p>{{ turno()!.servicioNombre }}</p>
+          </div>
+        </div>
+
+        <div class="detalle-item">
+          <span class="icon">✂️</span>
+          <div>
+            <label>Profesional</label>
+            <p>{{ turno()!.empleadoNombre }}</p>
+          </div>
+        </div>
+
+        @if (turno()!.codigoConfirmacion) {
+          <div class="detalle-item codigo-confirmacion">
+            <span class="icon">🔑</span>
+            <div>
+              <label>Código de Confirmación</label>
+              <p class="codigo">{{ turno()!.codigoConfirmacion }}</p>
+              <small>Guarda este código para cancelar tu turno si es necesario</small>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="acciones">
+        <button class="btn-primary" (click)="descargarComprobante()">
+          📄 Descargar Comprobante PDF
+        </button>
+        <button class="btn-secondary" (click)="compartirWhatsApp()">
+          📱 Compartir por WhatsApp
+        </button>
+        <button class="btn-text" (click)="volverInicio()">
+          Volver al Inicio
+        </button>
+      </div>
+
+      @if (descargaError()) {
+        <div class="error-message">
+          {{ descargaError() }}
+        </div>
+      }
+
+      <div class="info-adicional">
+        <p><strong>💡 Importante:</strong></p>
+        <ul>
+          <li>Por favor llega 5 minutos antes de tu turno</li>
+          <li>Si necesitas cancelar, usa tu código de confirmación</li>
+          <li>Puedes descargar el comprobante en PDF con código QR</li>
+        </ul>
+      </div>
+    </div>
+  }
+</div>

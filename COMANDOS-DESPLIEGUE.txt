@@ -1,0 +1,142 @@
+═══════════════════════════════════════════════════════════════
+  COMANDOS PARA DESPLEGAR EN DONWEB
+═══════════════════════════════════════════════════════════════
+
+PASO 1: Verificar que estás en el directorio correcto
+───────────────────────────────────────────────────────────────
+pwd
+"Deberías ver: /home/usuario/turnero-peluqueria"
+
+ls -la
+"Deberías ver: docker-compose.yml, .env, front/, initial-scaffolding/"
+
+
+PASO 2: Verificar el .env
+───────────────────────────────────────────────────────────────
+cat .env | grep API_URL
+
+"Debería mostrar:"
+API_URL=http://138.36.236.247:8080/api
+
+
+PASO 3: Buildear TODO (toma 5-10 minutos)
+───────────────────────────────────────────────────────────────
+docker-compose build --no-cache
+
+"Esto descargará imágenes, instalará dependencias y compilará:"
+"  - Backend (Maven + Java)"
+"  - Frontend (npm + Angular)"
+"  - PostgreSQL"
+"  - Evolution API"
+
+"Es NORMAL que tarde. Verás líneas como:"
+"  - [backend] Downloading dependencies..."
+"  - [frontend] npm install..."
+"  - Building image..."
+
+
+PASO 4: Iniciar TODO
+───────────────────────────────────────────────────────────────
+docker-compose up -d
+
+"El -d significa 'detached' (en background)"
+
+
+PASO 5: Ver el progreso
+───────────────────────────────────────────────────────────────
+docker-compose logs -f
+
+"Verás los logs en tiempo real"
+"Presiona Ctrl+C para salir (no detiene los contenedores)"
+
+
+PASO 6: Verificar estado
+───────────────────────────────────────────────────────────────
+docker-compose ps
+
+"Deberías ver algo como:"
+NAME                  STATUS              PORTS
+turnero-frontend      Up 2 minutes        0.0.0.0:80->80/tcp
+turnero-backend       Up 2 minutes        0.0.0.0:8080->8080/tcp
+turnero-db            Up 3 minutes        0.0.0.0:5432->5432/tcp
+turnero-evolution     Up 2 minutes        0.0.0.0:8085->8080/tcp
+
+"TODOS deben estar en 'Up'"
+
+
+PASO 7: Probar desde el servidor
+───────────────────────────────────────────────────────────────
+curl http://localhost:8080/actuator/health
+
+"Debería responder:"
+{"status":"UP"}
+
+curl http://localhost:8080/api/servicios
+
+"Debería devolver JSON con los servicios"
+
+
+PASO 8: Abrir en tu navegador (desde tu PC)
+───────────────────────────────────────────────────────────────
+"Abre estas URLs:"
+
+http://138.36.236.247
+"Página principal (reservar turnos)"
+
+http://138.36.236.247:8080/actuator/health
+"Health check del backend"
+
+http://138.36.236.247:8080/api/servicios
+"API de servicios"
+
+http://138.36.236.247:8080/swagger-ui.html
+"Documentación API"
+
+
+═══════════════════════════════════════════════════════════════
+  SI HAY PROBLEMAS
+═══════════════════════════════════════════════════════════════
+
+Ver logs de errores:
+───────────────────────────────────────────────────────────────
+docker-compose logs backend | grep -i error
+docker-compose logs frontend | grep -i error
+docker-compose logs db | grep -i error
+
+
+Ver logs de un servicio específico:
+───────────────────────────────────────────────────────────────
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+
+Reiniciar un servicio:
+───────────────────────────────────────────────────────────────
+docker-compose restart backend
+docker-compose restart frontend
+
+
+Detener todo y volver a empezar:
+───────────────────────────────────────────────────────────────
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+
+
+Ver uso de recursos:
+───────────────────────────────────────────────────────────────
+docker stats
+
+"Presiona Ctrl+C para salir"
+
+
+═══════════════════════════════════════════════════════════════
+  RESUMEN DE COMANDOS
+═══════════════════════════════════════════════════════════════
+
+1. docker-compose build --no-cache
+2. docker-compose up -d
+3. docker-compose ps
+4. docker-compose logs -f
+
+"¡Listo! Tu sistema estará en http://138.36.236.247"

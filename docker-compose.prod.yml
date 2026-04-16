@@ -1,0 +1,130 @@
+# Docker Compose para Producción en DonWeb
+# ==========================================
+# Configuración optimizada para hosting
+
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: turnero-db-prod
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Optimizaciones para Plan 2 (4GB RAM)
+      POSTGRES_SHARED_BUFFERS: 256MB
+      POSTGRES_EFFECTIVE_CACHE_SIZE: 768MB
+      POSTGRES_MAX_CONNECTIONS: 50
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - turnero-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Spring Boot
+  backend:
+    build:
+      context: ./initial-scaffolding
+      dockerfile: Dockerfile
+      args:
+        - BUILD_ENV=production
+    container_name: turnero-backend-prod
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      EVOLUTION_WHATSAPP_ENABLED: ${EVOLUTION_WHATSAPP_ENABLED:-true}
+      EVOLUTION_API_BASE_URL: ${EVOLUTION_API_BASE_URL}
+      EVOLUTION_INSTANCE: ${EVOLUTION_INSTANCE:-turnero}
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+      EVOLUTION_SEND_TEXT_PATH: ${EVOLUTION_SEND_TEXT_PATH:-/message/sendText/%s}
+      EVOLUTION_TIMEOUT_MS: ${EVOLUTION_TIMEOUT_MS:-10000}
+      EVOLUTION_COUNTRY_CODE: ${EVOLUTION_COUNTRY_CODE:-54}
+      PORT: 8080
+      # Optimizado para Plan 2 (4GB RAM) - Java usa hasta 1.2GB
+      JAVA_OPTS: "-Xms512m -Xmx1200m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - turnero-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1.5G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    labels:
+      - "com.turnero.service=backend"
+      - "com.turnero.environment=production"
+
+  # Frontend Angular + Nginx
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+      args:
+        - BUILD_ENV=production
+    container_name: turnero-frontend-prod
+    restart: always
+    environment:
+      API_URL: ${API_URL}
+      NGINX_PORT: 80
+      NGINX_HOST: ${NGINX_HOST:-_}
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - turnero-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "com.turnero.service=frontend"
+      - "com.turnero.environment=production"
+
+networks:
+  turnero-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

@@ -1,0 +1,135 @@
+╔══════════════════════════════════════════════════════════════════╗
+║  🚀 PASOS FINALES - Código ya subido a DonWeb                    ║
+╚══════════════════════════════════════════════════════════════════╝
+
+PASO 1: Conectar por SSH
+─────────────────────────────────────────────────────────────────
+
+ssh usuario@tu-dominio.donweb.com
+
+(Reemplaza "usuario" y "tu-dominio.donweb.com" con tus datos reales)
+
+
+PASO 2: Ir al directorio del proyecto
+─────────────────────────────────────────────────────────────────
+
+cd turnero-peluqueria
+
+# O si está en otro lugar:
+cd /home/usuario/turnero-peluqueria
+
+
+PASO 3: Editar el archivo .env (¡IMPORTANTE!)
+─────────────────────────────────────────────────────────────────
+
+nano .env
+
+# Cambia estas líneas (usa las flechas del teclado para moverte):
+
+API_URL=http://TU-DOMINIO-REAL.donweb.com:8080/api  ← ¡CRÍTICO!
+APP_URL=http://TU-DOMINIO-REAL.donweb.com
+
+POSTGRES_PASSWORD=TuPasswordSegura2024!
+DB_PASSWORD=TuPasswordSegura2024!  (igual que POSTGRES_PASSWORD)
+
+JWT_SECRET=pega-aqui-64-caracteres-aleatorios
+
+# Para guardar y salir:
+#   Ctrl+O → Enter (guardar)
+#   Ctrl+X (salir)
+
+
+PASO 4: Verificar que Docker esté instalado
+─────────────────────────────────────────────────────────────────
+
+docker --version
+docker-compose --version
+
+# Si no está instalado (Ubuntu/Debian):
+sudo apt update
+sudo apt install docker.io docker-compose -y
+sudo systemctl start docker
+
+
+PASO 5: Desplegar TODO (Frontend + Backend + BD)
+─────────────────────────────────────────────────────────────────
+
+# Opción A: Con el script (más fácil)
+chmod +x deploy-donweb.sh
+./deploy-donweb.sh
+
+# Opción B: Manual (más control)
+docker-compose build --no-cache    # Toma 5-10 minutos
+docker-compose up -d               # Inicia todo
+
+
+PASO 6: Monitorear el despliegue
+─────────────────────────────────────────────────────────────────
+
+# Ver logs en tiempo real (Ctrl+C para salir)
+docker-compose logs -f
+
+# Ver estado de contenedores
+docker-compose ps
+
+# Deberías ver 4 servicios "Up":
+#   ✓ turnero-frontend
+#   ✓ turnero-backend
+#   ✓ turnero-db
+#   ✓ turnero-evolution
+
+
+PASO 7: Verificar que funciona
+─────────────────────────────────────────────────────────────────
+
+# En el servidor, probar la API:
+curl http://localhost:8080/actuator/health
+
+# Debería responder: {"status":"UP"}
+
+# Probar servicios:
+curl http://localhost:8080/api/servicios
+
+
+PASO 8: Abrir en tu navegador
+─────────────────────────────────────────────────────────────────
+
+Frontend:
+http://tu-dominio.donweb.com
+
+Backend API:
+http://tu-dominio.donweb.com:8080/api/servicios
+
+Swagger:
+http://tu-dominio.donweb.com:8080/swagger-ui.html
+
+Admin:
+http://tu-dominio.donweb.com/admin
+
+
+╔══════════════════════════════════════════════════════════════════╗
+║  ⚠️  SI ALGO FALLA                                               ║
+╚══════════════════════════════════════════════════════════════════╝
+
+Ver logs de errores:
+  docker-compose logs backend
+  docker-compose logs frontend
+  docker-compose logs db
+
+Reiniciar un servicio:
+  docker-compose restart backend
+
+Reconstruir todo:
+  docker-compose down
+  docker-compose build --no-cache
+  docker-compose up -d
+
+
+╔══════════════════════════════════════════════════════════════════╗
+║  🎉 ¡LISTO!                                                      ║
+╚══════════════════════════════════════════════════════════════════╝
+
+Tu sistema completo estará funcionando en:
+http://tu-dominio.donweb.com
+
+Los clientes podrán reservar turnos inmediatamente.
