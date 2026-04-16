@@ -76,6 +76,7 @@ Thumbs.db
 .env.local
 .env.production
 .env.*.local
+.env.donweb
 
 # Docker
 docker-compose.override.yml
